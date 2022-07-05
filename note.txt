@@ -1,0 +1,6 @@
+1. Login
+2. Register
+3. Landing Page
+4. Detail Resep
+5. Add Resep
+6. Profile
