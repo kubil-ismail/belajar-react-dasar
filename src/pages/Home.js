@@ -4,10 +4,17 @@ import { Container, Row, Col } from "react-bootstrap";
 
 // components
 import CardImage from "../components/molecules/CardImage";
+import Navbar from "../components/molecules/Navbar";
 
-function Home() {
+function Home(props) {
   const [listPhoto, setListPhoto] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState([]);
+
+  React.useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login";
+    }
+  }, []);
 
   React.useEffect(() => {
     axios.get("https://jsonplaceholder.typicode.com/photos").then((res) => {
@@ -20,32 +27,38 @@ function Home() {
   }, []);
 
   return (
-    <Container>
-      <Row>
-        {/* CONDITIONAL RENDERING */}
-        {isLoading ? (
-          <>
-            {[...Array(6)]?.map(() => (
-              <Col lg={4}>
-                <CardImage
-                  image={
-                    "https://cdn.dribbble.com/users/2973561/screenshots/5757826/loading__.gif"
-                  }
-                />
-              </Col>
-            ))}
-          </>
-        ) : (
-          <>
-            {listPhoto?.map((item) => (
-              <Col lg={4}>
-                <CardImage image={item?.url} title={item?.title} />
-              </Col>
-            ))}
-          </>
-        )}
-      </Row>
-    </Container>
+    <>
+      <div className="mb-5">
+        <Navbar />
+      </div>
+
+      <Container>
+        <Row>
+          {/* CONDITIONAL RENDERING */}
+          {isLoading ? (
+            <>
+              {[...Array(6)]?.map(() => (
+                <Col lg={4}>
+                  <CardImage
+                    image={
+                      "https://cdn.dribbble.com/users/2973561/screenshots/5757826/loading__.gif"
+                    }
+                  />
+                </Col>
+              ))}
+            </>
+          ) : (
+            <>
+              {listPhoto?.map((item) => (
+                <Col lg={4}>
+                  <CardImage image={item?.url} title={item?.title} />
+                </Col>
+              ))}
+            </>
+          )}
+        </Row>
+      </Container>
+    </>
   );
 }
 
