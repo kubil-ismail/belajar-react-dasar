@@ -4,7 +4,7 @@ import axios from "axios";
 import { connect } from "react-redux";
 import { auth, providerGoogle, providerFacebook } from "../firebase";
 
-function Login() {
+function Login(props) {
   const [isError, setIsError] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
 
@@ -18,18 +18,14 @@ function Login() {
     }
   }, []);
 
-  const handleLogin = (props) => {
+  const handleLogin = (value) => {
     setIsLoading(true);
 
-    console.log({
-      email: props?.email ?? email,
-      password: props?.password ?? password,
-    });
 
     axios
       .post(`${process.env.REACT_APP_API_URL}/login`, {
-        email: props?.email ?? email,
-        password: props?.password ?? password,
+        email: value?.email ?? email,
+        password: value?.password ?? password,
       })
       .then((res) => {
         setIsError(false);
