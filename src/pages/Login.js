@@ -1,8 +1,10 @@
 import React from "react";
 import { Form, Button, Row, Col, Alert } from "react-bootstrap";
 import axios from "axios";
+import { connect } from "react-redux";
+import { auth, providerGoogle, providerFacebook } from "../firebase";
 
-function Login() {
+function Login(props) {
   const [isError, setIsError] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
 
@@ -16,18 +18,24 @@ function Login() {
     }
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (props) => {
     setIsLoading(true);
+
     axios
-      .post("http://localhost:8500/login", {
-        email: email,
-        password: password,
+      .post(`${process.env.REACT_APP_API_URL}/login`, {
+        email: props ? props.email : email,
+        password: props ? props.password : password,
       })
       .then((res) => {
         setIsError(false);
 
         // SET TOKEN
-        localStorage.setItem("token", res?.data);
+        localStorage.setItem("token", res?.data?.token);
+        localStorage.setItem("user", JSON.stringify(res?.data?.user));
+        // BEFORE INSERT IN REDUX
+
+        props.setProfile(res?.data?.user);
+
         window.location.href = "/";
       })
       .catch((err) => {
@@ -37,6 +45,70 @@ function Login() {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  const handleRegister = (props) => {
+    setIsLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_API_URL}/users/add`, {
+        email: props?.email,
+        password: props?.password,
+        name: props?.name,
+        job: "-",
+        education: "-",
+        photo: props?.photo,
+      })
+      .then((res) => {
+        setIsError(false);
+
+        handleLogin({
+          email: props.email,
+          password: props.password,
+        });
+      })
+      .catch((err) => {
+        setIsError(true);
+        setErrorMsg(err?.response?.data);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  const handleLoginGoogle = () => {
+    auth.signInWithPopup(providerGoogle).then((res) => {
+      if (res?.additionalUserInfo?.isNewUser) {
+        handleRegister({
+          email: res?.additionalUserInfo?.profile?.email,
+          password: res?.additionalUserInfo?.profile?.id,
+          name: res?.additionalUserInfo?.profile?.name,
+          photo: res?.additionalUserInfo?.profile?.picture,
+        });
+      } else {
+        handleLogin({
+          email: res?.additionalUserInfo?.profile?.email,
+          password: res?.additionalUserInfo?.profile?.id,
+        });
+      }
+    });
+  };
+
+  const handleLoginFacebook = () => {
+    auth.signInWithPopup(providerFacebook).then((res) => {
+      if (res?.additionalUserInfo?.isNewUser) {
+        handleRegister({
+          email: res?.additionalUserInfo?.profile?.email,
+          password: res?.additionalUserInfo?.profile?.id,
+          name: res?.additionalUserInfo?.profile?.name,
+          photo: res?.additionalUserInfo?.profile?.picture?.data?.url,
+        });
+      } else {
+        handleLogin({
+          email: res?.additionalUserInfo?.profile?.email,
+          password: res?.additionalUserInfo?.profile?.id,
+        });
+      }
+    });
   };
 
   return (
@@ -65,21 +137,53 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicCheckbox">
-            <Form.Check type="checkbox" label="Check me out" />
-          </Form.Group>
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={isLoading}
-            onClick={handleLogin}
-          >
-            {isLoading ? "Loading..." : "Login"}
-          </Button>
+          <div className="d-grid gap-2">
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={isLoading}
+              onClick={handleLogin}
+            >
+              {isLoading ? "Loading..." : "Login"}
+            </Button>
+          </div>
+
+          <p className="text-center my-2">Or</p>
+          {/* Google */}
+          <div className="d-grid gap-2 mb-2">
+            <Button
+              variant="outline-danger"
+              type="submit"
+              disabled={isLoading}
+              onClick={handleLoginGoogle}
+            >
+              Connect with Google
+            </Button>
+          </div>
+
+          {/* Facebook */}
+          <div className="d-grid gap-2">
+            <Button
+              variant="outline-primary"
+              type="submit"
+              disabled={isLoading}
+              onClick={handleLoginFacebook}
+            >
+              Connect with Facebook
+            </Button>
+          </div>
         </Form>
       </Col>
     </Row>
   );
 }
 
-export default Login;
+const mapStateToProps = (state) => ({
+  authData: state,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setProfile: (data) => dispatch({ type: "SET_PROFILE", data: data }),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
