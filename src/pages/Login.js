@@ -35,9 +35,9 @@ function Login(props) {
         localStorage.setItem("user", JSON.stringify(res?.data?.user));
         // BEFORE INSERT IN REDUX
 
-        props.setProfile(res?.data?.user);
+        // props.setProfile(res?.data?.user);
 
-        window.location.href = "/";
+        // window.location.href = "/";
       })
       .catch((err) => {
         setIsError(true);
