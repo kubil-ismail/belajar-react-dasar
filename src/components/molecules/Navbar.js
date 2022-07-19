@@ -31,7 +31,7 @@ function BasicExample() {
             </NavDropdown>
           </Nav>
           <Nav>
-            <Nav.Link href="#deets">{UserConsumer?.name}</Nav.Link>
+            <Nav.Link href="/logout">Logout</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import ListUsers from "./pages/ListUsers";
+import Logout from "./pages/Logout";
 
 export default function App() {
   axios.interceptors.request.use(
@@ -51,6 +52,7 @@ export default function App() {
 
               {/* NOT AUTHENTICATION PAGES */}
               <Route path="login" element={<Login />} />
+              <Route path="logout" element={<Logout />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
