@@ -5,7 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProfileContext } from "./context";
 import axios from "axios";
 import { Provider } from "react-redux";
-import store from "./store";
+import { store, persistor } from "./redux/store";
+import { PersistGate } from "redux-persist/integration/react";
 
 // import pages
 import Profile from "./pages/Profile";
@@ -35,29 +36,31 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <ProfileContext.Provider
-        value={
-          localStorage.getItem("user")
-            ? JSON.parse(localStorage.getItem("user"))
-            : {}
-        }
-      >
-        <BrowserRouter>
-          <Routes>
-            <Route path="/">
-              {/* AUTHENTICATION PAGES */}
-              <Route index element={<Home />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="list-users" element={<ListUsers />} />
+      <PersistGate loading={null} persistor={persistor}>
+        <ProfileContext.Provider
+          value={
+            localStorage.getItem("user")
+              ? JSON.parse(localStorage.getItem("user"))
+              : {}
+          }
+        >
+          <BrowserRouter>
+            <Routes>
+              <Route path="/">
+                {/* AUTHENTICATION PAGES */}
+                <Route index element={<Home />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="list-users" element={<ListUsers />} />
 
-              {/* NOT AUTHENTICATION PAGES */}
-              <Route path="login" element={<Login />} />
-              <Route path="logout" element={<Logout />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ProfileContext.Provider>
+                {/* NOT AUTHENTICATION PAGES */}
+                <Route path="login" element={<Login />} />
+                <Route path="logout" element={<Logout />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ProfileContext.Provider>
+      </PersistGate>
     </Provider>
   );
 }

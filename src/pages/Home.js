@@ -6,14 +6,16 @@ import { connect } from "react-redux";
 // components
 import CardImage from "../components/molecules/CardImage";
 import Navbar from "../components/molecules/Navbar";
+import { useNavigate } from "react-router-dom";
 
 function Home(props) {
+  const navigate = useNavigate();
   const [listPhoto, setListPhoto] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState([]);
 
   React.useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
+    if (!props?.authData?.token) {
+      navigate("/login");
     }
   }, []);
 

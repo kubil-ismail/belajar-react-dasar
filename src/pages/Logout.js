@@ -1,11 +1,15 @@
 import React from "react";
 import Spinner from "react-bootstrap/Spinner";
+import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-function Logout() {
+function Logout(props) {
+  const navigate = useNavigate();
+
   React.useEffect(() => {
     setTimeout(() => {
-      localStorage.clear();
-      window.location.href = "/login";
+      props.setLogout();
+      navigate("/login");
     }, 2000);
   }, []);
 
@@ -21,4 +25,12 @@ function Logout() {
   );
 }
 
-export default Logout;
+const mapStateToProps = (state) => ({
+  authData: state?.auth,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setLogout: () => dispatch({ type: "SET_LOGOUT" }),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Logout);

@@ -2,9 +2,12 @@ import React from "react";
 import { Form, Button, Row, Col, Alert } from "react-bootstrap";
 import axios from "axios";
 import { connect } from "react-redux";
+import { authRequest } from "../redux/reducers/authReducer";
 import { auth, providerGoogle, providerFacebook } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 function Login(props) {
+  const navigate = useNavigate();
   const [isError, setIsError] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
 
@@ -13,39 +16,18 @@ function Login(props) {
   const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (localStorage.getItem("token")) {
-      window.location.href = "/";
+    if (props.auth.token) {
+      navigate("/");
     }
-  }, []);
+  }, [props.auth]);
 
   const handleLogin = (value) => {
-    setIsLoading(true);
+    // setIsLoading(true);
 
-
-    axios
-      .post(`${process.env.REACT_APP_API_URL}/login`, {
-        email: value?.email ?? email,
-        password: value?.password ?? password,
-      })
-      .then((res) => {
-        setIsError(false);
-
-        // SET TOKEN
-        localStorage.setItem("token", res?.data?.token);
-        localStorage.setItem("user", JSON.stringify(res?.data?.user));
-        // BEFORE INSERT IN REDUX
-
-        props.setProfile(res?.data?.user);
-
-        window.location.href = "/";
-      })
-      .catch((err) => {
-        setIsError(true);
-        setErrorMsg(err?.response?.data);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    props.authRequestLogin({
+      email: value?.email ?? email,
+      password: value?.password ?? password,
+    });
   };
 
   const handleRegister = (props) => {
@@ -115,7 +97,9 @@ function Login(props) {
   return (
     <Row className="justify-content-md-center flex-center-vertical h-100">
       <Col lg={4}>
-        {isError ? <Alert variant="danger">{errorMsg}</Alert> : null}
+        {props.auth?.isError || isError ? (
+          <Alert variant="danger">{props.auth?.errorMsg || errorMsg}</Alert>
+        ) : null}
 
         <Form onSubmit={(e) => e.preventDefault()}>
           <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -142,10 +126,10 @@ function Login(props) {
             <Button
               variant="primary"
               type="submit"
-              disabled={isLoading}
+              disabled={props.auth?.isLoading || isLoading}
               onClick={handleLogin}
             >
-              {isLoading ? "Loading..." : "Login"}
+              {props.auth?.isLoading || isLoading ? "Loading..." : "Login"}
             </Button>
           </div>
 
@@ -155,7 +139,7 @@ function Login(props) {
             <Button
               variant="outline-danger"
               type="submit"
-              disabled={isLoading}
+              disabled={props.auth?.isLoading || isLoading}
               onClick={handleLoginGoogle}
             >
               Connect with Google
@@ -167,7 +151,7 @@ function Login(props) {
             <Button
               variant="outline-primary"
               type="submit"
-              disabled={isLoading}
+              disabled={props.auth?.isLoading || isLoading}
               onClick={handleLoginFacebook}
             >
               Connect with Facebook
@@ -180,11 +164,12 @@ function Login(props) {
 }
 
 const mapStateToProps = (state) => ({
-  authData: state,
+  auth: state.auth,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setProfile: (data) => dispatch({ type: "SET_PROFILE", data: data }),
+  authRequestLogin: (data) => dispatch(authRequest(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login);
